@@ -1,11 +1,14 @@
 package edu.eci.dosw.tdd.core.model;
-import java.util.Date;
+
+import java.time.LocalDate;
 import lombok.Data;
+
 @Data
 public class Loan {
-    private String book;
-    private String user;
-    private Integer loanDate;
-    private Date status;
-    private Date returnDate;
+    private Integer id;
+    private Integer bookId;
+    private Integer userId;
+    private LocalDate loanDate;
+    private LocalDate returnDate;
+    private Status status;
 }
