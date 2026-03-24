@@ -2,67 +2,76 @@ package edu.eci.dosw.tdd.core.service;
 
 import edu.eci.dosw.tdd.core.exception.BookNotFoundException;
 import edu.eci.dosw.tdd.core.model.Book;
-import edu.eci.dosw.tdd.core.util.IdGeneratorUtil;
 import edu.eci.dosw.tdd.core.validator.BookValidator;
-import java.util.ArrayList;
-import java.util.HashMap;
+import edu.eci.dosw.tdd.persistence.entity.BookEntity;
+import edu.eci.dosw.tdd.persistence.mapper.BookPersistenceMapper;
+import edu.eci.dosw.tdd.persistence.repository.BookRepository;
 import java.util.List;
-import java.util.Map;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class BookService {
-    private final Map<Integer, Book> booksById = new HashMap<>();
-    private final Map<Integer, Integer> stockByBookId = new HashMap<>();
+    private final BookRepository bookRepository;
+
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
+    }
 
     public Book addBook(Book book, Integer quantity) {
         BookValidator.validateBook(book);
         BookValidator.validateQuantity(quantity);
-
-        Integer id = book.getId() != null ? book.getId() : IdGeneratorUtil.nextId();
-        book.setId(id);
-        book.setAvailable(quantity > 0);
-
-        booksById.put(id, book);
-        stockByBookId.put(id, quantity);
-        return book;
+        BookEntity entity = BookPersistenceMapper.toNewEntity(book, quantity);
+        BookEntity saved = bookRepository.save(entity);
+        return BookPersistenceMapper.toDomain(saved);
     }
 
+    @Transactional(readOnly = true)
     public List<Book> getAllBooks() {
-        return new ArrayList<>(booksById.values());
+        return bookRepository.findAll().stream()
+                .map(BookPersistenceMapper::toDomain)
+                .toList();
     }
 
+    @Transactional(readOnly = true)
     public Book getBookById(Integer id) {
-        Book book = booksById.get(id);
-        if (book == null) {
-            throw new BookNotFoundException("No se encontro un libro con id " + id);
-        }
-        return book;
+        return bookRepository.findById(id)
+                .map(BookPersistenceMapper::toDomain)
+                .orElseThrow(() -> new BookNotFoundException("No se encontro un libro con id " + id));
     }
 
     public Book updateAvailability(Integer id, boolean available) {
-        Book book = getBookById(id);
-        book.setAvailable(available);
-        return book;
+        BookEntity entity = bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException("No se encontro un libro con id " + id));
+        entity.setAvailable(available);
+        return BookPersistenceMapper.toDomain(bookRepository.save(entity));
     }
 
+    @Transactional(readOnly = true)
     public int getAvailableCopies(Integer bookId) {
-        getBookById(bookId);
-        return stockByBookId.getOrDefault(bookId, 0);
+        BookEntity entity = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException("No se encontro un libro con id " + bookId));
+        return entity.getAvailableCopies();
     }
 
     public void decreaseStock(Integer bookId) {
-        int current = getAvailableCopies(bookId);
+        BookEntity entity = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException("No se encontro un libro con id " + bookId));
+        int current = entity.getAvailableCopies();
         if (current <= 0) {
             throw new IllegalStateException("No hay ejemplares disponibles para el libro " + bookId);
         }
-        stockByBookId.put(bookId, current - 1);
-        booksById.get(bookId).setAvailable(current - 1 > 0);
+        entity.setAvailableCopies(current - 1);
+        entity.setAvailable(current - 1 > 0);
+        bookRepository.save(entity);
     }
 
     public void increaseStock(Integer bookId) {
-        int current = getAvailableCopies(bookId);
-        stockByBookId.put(bookId, current + 1);
-        booksById.get(bookId).setAvailable(true);
+        BookEntity entity = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException("No se encontro un libro con id " + bookId));
+        entity.setAvailableCopies(entity.getAvailableCopies() + 1);
+        entity.setAvailable(true);
+        bookRepository.save(entity);
     }
 }

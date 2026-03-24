@@ -2,21 +2,54 @@ package edu.eci.dosw.tdd.core.service;
 
 import edu.eci.dosw.tdd.core.exception.BookNotAvailableException;
 import edu.eci.dosw.tdd.core.exception.LoanLimitExceededException;
+import edu.eci.dosw.tdd.core.exception.LoanNotFoundException;
 import edu.eci.dosw.tdd.core.model.Book;
 import edu.eci.dosw.tdd.core.model.Loan;
 import edu.eci.dosw.tdd.core.model.Status;
 import edu.eci.dosw.tdd.core.model.User;
+import edu.eci.dosw.tdd.persistence.repository.BookRepository;
+import edu.eci.dosw.tdd.persistence.repository.LoanRepository;
+import edu.eci.dosw.tdd.persistence.repository.UserRepository;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
+@SpringBootTest
+@ActiveProfiles("test")
+@Transactional
 class LoanServiceTest {
+
+    @Autowired
+    private LoanService loanService;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private BookService bookService;
+
+    @Autowired
+    private LoanRepository loanRepository;
+
+    @Autowired
+    private BookRepository bookRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @BeforeEach
+    void clean() {
+        loanRepository.deleteAll();
+        bookRepository.deleteAll();
+        userRepository.deleteAll();
+    }
 
     @Test
     void shouldCreateLoanSuccessfully() {
-        UserService userService = new UserService();
-        BookService bookService = new BookService();
-        LoanService loanService = new LoanService(userService, bookService);
-
         User user = new User();
         user.setName("Ana");
         User createdUser = userService.registerUser(user);
@@ -30,14 +63,11 @@ class LoanServiceTest {
 
         Assertions.assertEquals(Status.ACTIVE, loan.getStatus());
         Assertions.assertEquals(0, bookService.getAvailableCopies(createdBook.getId()));
+        Assertions.assertEquals(1, loanRepository.count());
     }
 
     @Test
     void shouldFailWhenBookHasNoStock() {
-        UserService userService = new UserService();
-        BookService bookService = new BookService();
-        LoanService loanService = new LoanService(userService, bookService);
-
         User user = new User();
         user.setName("Ana");
         User createdUser = userService.registerUser(user);
@@ -54,10 +84,6 @@ class LoanServiceTest {
 
     @Test
     void shouldFailWhenUserExceedsLoanLimit() {
-        UserService userService = new UserService();
-        BookService bookService = new BookService();
-        LoanService loanService = new LoanService(userService, bookService);
-
         User user = new User();
         user.setName("Carlos");
         User createdUser = userService.registerUser(user);
@@ -79,10 +105,6 @@ class LoanServiceTest {
 
     @Test
     void shouldReturnLoanSuccessfully() {
-        UserService userService = new UserService();
-        BookService bookService = new BookService();
-        LoanService loanService = new LoanService(userService, bookService);
-
         User user = new User();
         user.setName("Maria");
         User createdUser = userService.registerUser(user);
@@ -98,5 +120,28 @@ class LoanServiceTest {
         Assertions.assertEquals(Status.RETURNED, returnedLoan.getStatus());
         Assertions.assertEquals(1, bookService.getAvailableCopies(createdBook.getId()));
         Assertions.assertNotNull(returnedLoan.getReturnDate());
+    }
+
+    @Test
+    void shouldGetLoanById() {
+        User user = new User();
+        user.setName("Luis");
+        User createdUser = userService.registerUser(user);
+
+        Book book = new Book();
+        book.setTitle("TDD");
+        book.setAuthor("Kent Beck");
+        Book createdBook = bookService.addBook(book, 1);
+
+        Loan created = loanService.createLoan(createdUser.getId(), createdBook.getId());
+        Loan found = loanService.getLoanById(created.getId());
+
+        Assertions.assertEquals(created.getId(), found.getId());
+        Assertions.assertEquals(created.getBookId(), found.getBookId());
+    }
+
+    @Test
+    void shouldFailWhenLoanNotFound() {
+        Assertions.assertThrows(LoanNotFoundException.class, () -> loanService.getLoanById(99999));
     }
 }

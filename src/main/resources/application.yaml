@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: DOSW-Library
+  datasource:
+    url: jdbc:postgresql://localhost:5432/dosw_library
+    username: dosw
+    password: dosw
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  show-actuator: false
