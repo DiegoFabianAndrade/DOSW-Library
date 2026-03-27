@@ -18,4 +18,7 @@ public interface LoanRepository extends JpaRepository<LoanEntity, Integer> {
     @EntityGraph(attributePaths = {"user", "book"})
     @Override
     Optional<LoanEntity> findById(Integer id);
+
+    @EntityGraph(attributePaths = {"user", "book"})
+    List<LoanEntity> findByUser_Id(Integer userId);
 }

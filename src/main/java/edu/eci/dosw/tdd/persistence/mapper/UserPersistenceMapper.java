@@ -12,12 +12,18 @@ public final class UserPersistenceMapper {
         User user = new User();
         user.setId(entity.getId());
         user.setName(entity.getName());
+        user.setUsername(entity.getUsername());
+        user.setPassword(entity.getPassword());
+        user.setRole(entity.getRole());
         return user;
     }
 
     public static UserEntity toNewEntity(User user) {
         return UserEntity.builder()
                 .name(user.getName())
+                .username(user.getUsername())
+                .password(user.getPassword())
+                .role(user.getRole())
                 .build();
     }
 }

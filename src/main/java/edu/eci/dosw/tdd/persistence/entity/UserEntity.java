@@ -1,7 +1,10 @@
 package edu.eci.dosw.tdd.persistence.entity;
 
+import edu.eci.dosw.tdd.core.model.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,4 +30,14 @@ public class UserEntity {
 
     @Column(nullable = false, length = 200)
     private String name;
+
+    @Column(nullable = false, length = 80, unique = true)
+    private String username;
+
+    @Column(nullable = false, length = 200)
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role;
 }

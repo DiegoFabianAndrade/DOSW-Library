@@ -16,4 +16,10 @@ public class UserDTO {
     private Integer id;
     @Schema(description = "Nombre completo", example = "Ana Perez")
     private String name;
+    @Schema(description = "Nombre de usuario", example = "anaperez")
+    private String username;
+    @Schema(description = "Contrasena para autenticacion", example = "Password123!")
+    private String password;
+    @Schema(description = "Rol del usuario", example = "USER")
+    private String role;
 }

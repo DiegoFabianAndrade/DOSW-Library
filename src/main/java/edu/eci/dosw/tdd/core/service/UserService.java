@@ -4,8 +4,10 @@ import edu.eci.dosw.tdd.core.exception.UserNotFoundException;
 import edu.eci.dosw.tdd.core.model.User;
 import edu.eci.dosw.tdd.core.validator.UserValidator;
 import edu.eci.dosw.tdd.persistence.mapper.UserPersistenceMapper;
+import edu.eci.dosw.tdd.persistence.entity.UserEntity;
 import edu.eci.dosw.tdd.persistence.repository.UserRepository;
 import java.util.List;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,15 +15,21 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User registerUser(User user) {
         UserValidator.validateUser(user);
-        return UserPersistenceMapper.toDomain(
-                userRepository.save(UserPersistenceMapper.toNewEntity(user)));
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new IllegalArgumentException("El username ya existe");
+        }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        UserEntity saved = userRepository.save(UserPersistenceMapper.toNewEntity(user));
+        return UserPersistenceMapper.toDomain(saved);
     }
 
     @Transactional(readOnly = true)

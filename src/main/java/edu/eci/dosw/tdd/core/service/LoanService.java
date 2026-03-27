@@ -92,4 +92,11 @@ public class LoanService {
                 .map(LoanPersistenceMapper::toDomain)
                 .orElseThrow(() -> new LoanNotFoundException("No se encontro un prestamo con id " + loanId));
     }
+
+    @Transactional(readOnly = true)
+    public List<Loan> getLoansByUserId(Integer userId) {
+        return loanRepository.findByUser_Id(userId).stream()
+                .map(LoanPersistenceMapper::toDomain)
+                .toList();
+    }
 }

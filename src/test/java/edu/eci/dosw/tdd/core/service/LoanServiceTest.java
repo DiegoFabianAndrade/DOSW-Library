@@ -5,6 +5,7 @@ import edu.eci.dosw.tdd.core.exception.LoanLimitExceededException;
 import edu.eci.dosw.tdd.core.exception.LoanNotFoundException;
 import edu.eci.dosw.tdd.core.model.Book;
 import edu.eci.dosw.tdd.core.model.Loan;
+import edu.eci.dosw.tdd.core.model.Role;
 import edu.eci.dosw.tdd.core.model.Status;
 import edu.eci.dosw.tdd.core.model.User;
 import edu.eci.dosw.tdd.persistence.repository.BookRepository;
@@ -52,6 +53,9 @@ class LoanServiceTest {
     void shouldCreateLoanSuccessfully() {
         User user = new User();
         user.setName("Ana");
+        user.setUsername("ana1");
+        user.setPassword("Password123!");
+        user.setRole(Role.USER);
         User createdUser = userService.registerUser(user);
 
         Book book = new Book();
@@ -70,6 +74,9 @@ class LoanServiceTest {
     void shouldFailWhenBookHasNoStock() {
         User user = new User();
         user.setName("Ana");
+        user.setUsername("ana2");
+        user.setPassword("Password123!");
+        user.setRole(Role.USER);
         User createdUser = userService.registerUser(user);
 
         Book book = new Book();
@@ -86,6 +93,9 @@ class LoanServiceTest {
     void shouldFailWhenUserExceedsLoanLimit() {
         User user = new User();
         user.setName("Carlos");
+        user.setUsername("carlos1");
+        user.setPassword("Password123!");
+        user.setRole(Role.USER);
         User createdUser = userService.registerUser(user);
 
         for (int i = 0; i < 4; i++) {
@@ -107,6 +117,9 @@ class LoanServiceTest {
     void shouldReturnLoanSuccessfully() {
         User user = new User();
         user.setName("Maria");
+        user.setUsername("maria1");
+        user.setPassword("Password123!");
+        user.setRole(Role.USER);
         User createdUser = userService.registerUser(user);
 
         Book book = new Book();
@@ -126,6 +139,9 @@ class LoanServiceTest {
     void shouldGetLoanById() {
         User user = new User();
         user.setName("Luis");
+        user.setUsername("luis1");
+        user.setPassword("Password123!");
+        user.setRole(Role.USER);
         User createdUser = userService.registerUser(user);
 
         Book book = new Book();

@@ -1,6 +1,7 @@
 package edu.eci.dosw.tdd.core.service;
 
 import edu.eci.dosw.tdd.core.exception.UserNotFoundException;
+import edu.eci.dosw.tdd.core.model.Role;
 import edu.eci.dosw.tdd.core.model.User;
 import edu.eci.dosw.tdd.persistence.repository.UserRepository;
 import org.junit.jupiter.api.Assertions;
@@ -31,6 +32,9 @@ class UserServiceTest {
     void shouldRegisterUserSuccessfully() {
         User user = new User();
         user.setName("Diego");
+        user.setUsername("diego");
+        user.setPassword("Password123!");
+        user.setRole(Role.USER);
 
         User created = userService.registerUser(user);
 
