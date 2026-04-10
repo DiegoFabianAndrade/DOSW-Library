@@ -56,13 +56,23 @@ JaCoCo: `target/site/jacoco/index.html` — PMD: `target/pmd.xml`
 
 Diagrama de clases:
 
+![Diagrama_Clases.png](docs/diagrams/Diagrama_Clases.png)
+
 Diagrama de componentes general:
+
+![Diagrama_Componentes_General.png](docs/diagrams/Diagrama_Componentes_General.png)
 
 Diagrama de componentes específico:
 
+![Diagrama_Componentes_Especifico.png](docs/diagrams/Diagrama_Componentes_Especifico.png)
+
 Diagrama db relacional:
 
+![Diagrama_DB_Relacional.png](docs/diagrams/Diagrama_DB_Relacional.png)
+
 Diagrama mongo:
+
+![Diagrama_Mongo.png](docs/diagrams/Diagrama_Mongo.png)
 
 ## CI
 
