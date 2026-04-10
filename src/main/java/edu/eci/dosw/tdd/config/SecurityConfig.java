@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/books/**").hasRole("LIBRARIAN")
                         .requestMatchers(HttpMethod.POST, "/api/users/**").hasRole("LIBRARIAN")
                         .requestMatchers(HttpMethod.GET, "/api/users/**").hasRole("LIBRARIAN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/loans/**").hasRole("LIBRARIAN")
                         .requestMatchers("/api/loans/**").hasAnyRole("USER", "LIBRARIAN")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -1,4 +1,4 @@
-package edu.eci.dosw.tdd.persistence.entity;
+package edu.eci.dosw.tdd.persistence.relational.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,6 +30,9 @@ public class BookEntity {
 
     @Column(nullable = false, length = 200)
     private String author;
+
+    @Column(name = "total_copies", nullable = false)
+    private int totalCopies;
 
     @Column(name = "available_copies", nullable = false)
     private int availableCopies;

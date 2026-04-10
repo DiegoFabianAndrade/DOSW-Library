@@ -6,11 +6,7 @@ import edu.eci.dosw.tdd.core.exception.LoanNotFoundException;
 import edu.eci.dosw.tdd.core.model.Loan;
 import edu.eci.dosw.tdd.core.model.Status;
 import edu.eci.dosw.tdd.core.validator.LoanValidator;
-import edu.eci.dosw.tdd.persistence.entity.LoanEntity;
-import edu.eci.dosw.tdd.persistence.mapper.LoanPersistenceMapper;
-import edu.eci.dosw.tdd.persistence.repository.BookRepository;
-import edu.eci.dosw.tdd.persistence.repository.LoanRepository;
-import edu.eci.dosw.tdd.persistence.repository.UserRepository;
+import edu.eci.dosw.tdd.persistence.port.LoanPersistencePort;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -21,21 +17,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class LoanService {
     private static final int MAX_ACTIVE_LOANS_PER_USER = 3;
 
-    private final LoanRepository loanRepository;
-    private final UserRepository userRepository;
-    private final BookRepository bookRepository;
+    private final LoanPersistencePort loans;
     private final UserService userService;
     private final BookService bookService;
 
-    public LoanService(
-            LoanRepository loanRepository,
-            UserRepository userRepository,
-            BookRepository bookRepository,
-            UserService userService,
-            BookService bookService) {
-        this.loanRepository = loanRepository;
-        this.userRepository = userRepository;
-        this.bookRepository = bookRepository;
+    public LoanService(LoanPersistencePort loans, UserService userService, BookService bookService) {
+        this.loans = loans;
         this.userService = userService;
         this.bookService = bookService;
     }
@@ -45,7 +32,7 @@ public class LoanService {
         userService.getUserById(userId);
         bookService.getBookById(bookId);
 
-        long activeLoansForUser = loanRepository.countByUser_IdAndStatus(userId, Status.ACTIVE);
+        long activeLoansForUser = loans.countActiveLoansByUser(userId);
         if (activeLoansForUser >= MAX_ACTIVE_LOANS_PER_USER) {
             throw new LoanLimitExceededException("El usuario " + userId + " excedio el limite de prestamos activos");
         }
@@ -56,47 +43,45 @@ public class LoanService {
 
         bookService.decreaseStock(bookId);
 
-        LoanEntity entity = LoanEntity.builder()
-                .user(userRepository.getReferenceById(userId))
-                .book(bookRepository.getReferenceById(bookId))
-                .loanDate(LocalDate.now())
-                .status(Status.ACTIVE)
-                .build();
-        LoanEntity saved = loanRepository.save(entity);
-        return LoanPersistenceMapper.toDomain(saved);
+        return loans.createLoan(userId, bookId, LocalDate.now(), Status.ACTIVE);
     }
 
     public Loan returnLoan(Integer loanId) {
-        LoanEntity loan = loanRepository.findById(loanId)
+        Loan loan = loans
+                .findLoanById(loanId)
                 .orElseThrow(() -> new LoanNotFoundException("No se encontro un prestamo con id " + loanId));
         if (loan.getStatus() == Status.RETURNED) {
             throw new IllegalStateException("El prestamo " + loanId + " ya fue devuelto");
         }
 
-        loan.setStatus(Status.RETURNED);
-        loan.setReturnDate(LocalDate.now());
-        bookService.increaseStock(loan.getBook().getId());
-        return LoanPersistenceMapper.toDomain(loanRepository.save(loan));
+        bookService.increaseStock(loan.getBookId());
+        return loans.markReturned(loanId, LocalDate.now());
+    }
+
+    public void deleteLoan(Integer loanId) {
+        Loan loan = loans
+                .findLoanById(loanId)
+                .orElseThrow(() -> new LoanNotFoundException("No se encontro un prestamo con id " + loanId));
+        if (loan.getStatus() == Status.ACTIVE) {
+            bookService.increaseStock(loan.getBookId());
+        }
+        loans.deleteLoanById(loanId);
     }
 
     @Transactional(readOnly = true)
     public List<Loan> getAllLoans() {
-        return loanRepository.findAll().stream()
-                .map(LoanPersistenceMapper::toDomain)
-                .toList();
+        return loans.findAllLoans();
     }
 
     @Transactional(readOnly = true)
     public Loan getLoanById(Integer loanId) {
-        return loanRepository.findById(loanId)
-                .map(LoanPersistenceMapper::toDomain)
+        return loans
+                .findLoanById(loanId)
                 .orElseThrow(() -> new LoanNotFoundException("No se encontro un prestamo con id " + loanId));
     }
 
     @Transactional(readOnly = true)
     public List<Loan> getLoansByUserId(Integer userId) {
-        return loanRepository.findByUser_Id(userId).stream()
-                .map(LoanPersistenceMapper::toDomain)
-                .toList();
+        return loans.findLoansByUserId(userId);
     }
 }

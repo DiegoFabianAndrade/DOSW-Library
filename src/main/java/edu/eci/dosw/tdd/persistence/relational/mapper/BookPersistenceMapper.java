@@ -1,7 +1,7 @@
-package edu.eci.dosw.tdd.persistence.mapper;
+package edu.eci.dosw.tdd.persistence.relational.mapper;
 
 import edu.eci.dosw.tdd.core.model.Book;
-import edu.eci.dosw.tdd.persistence.entity.BookEntity;
+import edu.eci.dosw.tdd.persistence.relational.entity.BookEntity;
 
 public final class BookPersistenceMapper {
 
@@ -14,6 +14,8 @@ public final class BookPersistenceMapper {
         book.setTitle(entity.getTitle());
         book.setAuthor(entity.getAuthor());
         book.setAvailable(entity.isAvailable());
+        book.setTotalCopies(entity.getTotalCopies());
+        book.setAvailableCopies(entity.getAvailableCopies());
         return book;
     }
 
@@ -21,6 +23,7 @@ public final class BookPersistenceMapper {
         return BookEntity.builder()
                 .title(book.getTitle())
                 .author(book.getAuthor())
+                .totalCopies(initialCopies)
                 .availableCopies(initialCopies)
                 .available(initialCopies > 0)
                 .build();

@@ -8,9 +8,9 @@ import edu.eci.dosw.tdd.core.model.Loan;
 import edu.eci.dosw.tdd.core.model.Role;
 import edu.eci.dosw.tdd.core.model.Status;
 import edu.eci.dosw.tdd.core.model.User;
-import edu.eci.dosw.tdd.persistence.repository.BookRepository;
-import edu.eci.dosw.tdd.persistence.repository.LoanRepository;
-import edu.eci.dosw.tdd.persistence.repository.UserRepository;
+import edu.eci.dosw.tdd.persistence.relational.repository.BookRepository;
+import edu.eci.dosw.tdd.persistence.relational.repository.LoanRepository;
+import edu.eci.dosw.tdd.persistence.relational.repository.UserRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
-@ActiveProfiles("test")
+@ActiveProfiles({"test", "relational"})
 @Transactional
 class LoanServiceTest {
 
@@ -159,5 +159,44 @@ class LoanServiceTest {
     @Test
     void shouldFailWhenLoanNotFound() {
         Assertions.assertThrows(LoanNotFoundException.class, () -> loanService.getLoanById(99999));
+    }
+
+    @Test
+    void listarPrestamosSinDatos_debeEstarVacio() {
+        Assertions.assertTrue(loanService.getAllLoans().isEmpty());
+    }
+
+    @Test
+    void eliminarPrestamo_debeQuedarInexistente() {
+        User user = newUser("u1");
+        Book book = newBook("Libro1");
+        Loan loan = loanService.createLoan(user.getId(), book.getId());
+        loanService.deleteLoan(loan.getId());
+        Assertions.assertThrows(LoanNotFoundException.class, () -> loanService.getLoanById(loan.getId()));
+    }
+
+    @Test
+    void eliminarPrestamo_listaPorUsuario_debeQuedarVacia() {
+        User user = newUser("u2");
+        Book book = newBook("Libro2");
+        Loan loan = loanService.createLoan(user.getId(), book.getId());
+        loanService.deleteLoan(loan.getId());
+        Assertions.assertTrue(loanService.getLoansByUserId(user.getId()).isEmpty());
+    }
+
+    private User newUser(String prefix) {
+        User user = new User();
+        user.setName(prefix);
+        user.setUsername(prefix + "usr");
+        user.setPassword("Password123!");
+        user.setRole(Role.USER);
+        return userService.registerUser(user);
+    }
+
+    private Book newBook(String title) {
+        Book book = new Book();
+        book.setTitle(title);
+        book.setAuthor("Autor");
+        return bookService.addBook(book, 1);
     }
 }

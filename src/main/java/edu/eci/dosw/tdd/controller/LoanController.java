@@ -17,7 +17,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -108,6 +111,21 @@ public class LoanController {
             }
         }
         return LoanMapper.toDTO(loanService.returnLoan(loanId));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Eliminar prestamo")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Eliminado"),
+            @ApiResponse(responseCode = "403", description = "Sin permisos",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Prestamo no encontrado",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteLoan(
+            @Parameter(description = "Identificador del prestamo", example = "1") @PathVariable Integer id) {
+        loanService.deleteLoan(id);
     }
 
     private AppUserPrincipal currentUser() {

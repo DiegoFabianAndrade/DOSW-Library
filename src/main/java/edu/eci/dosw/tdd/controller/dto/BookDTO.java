@@ -20,6 +20,8 @@ public class BookDTO {
     private String author;
     @Schema(description = "Indica si hay al menos un ejemplar disponible")
     private boolean available;
-    @Schema(description = "Cantidad de ejemplares en inventario", example = "3")
+    @Schema(description = "Ejemplares disponibles para prestamo", example = "3")
     private Integer quantity;
+    @Schema(description = "Total de ejemplares en catalogo (stock maximo)")
+    private Integer totalCopies;
 }

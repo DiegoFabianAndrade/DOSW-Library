@@ -1,17 +1,16 @@
 # DOSW-Library
 
-Proyecto de biblioteca. Libros, usuarios y prestamos guardados en postgres.
+API REST biblioteca: libros (inventario), usuarios, préstamos. JPA + PostgreSQL por defecto; perfil `mongo` con MongoDB. JWT y Swagger.
 
 ## Requisitos
 
-- Java 21
-- Maven
-- Postgres instalado
-- Docker para las pruebas funcionales (algunas fallan si no esta)
+- Java 21, Maven
+- Postgres si usas perfil `relational` (por defecto)
+- URI Mongo si usas perfil `mongo` (`MONGODB_URI`)
 
-## Como correrlo
+## Ejecutar
 
-Crear la base en postgres:
+Base Postgres (ajusta usuario/clave si hace falta):
 
 ```sql
 CREATE DATABASE dosw_library;
@@ -19,80 +18,31 @@ CREATE USER dosw WITH PASSWORD 'dosw';
 GRANT ALL PRIVILEGES ON DATABASE dosw_library TO dosw;
 ```
 
-En la carpeta del proyecto:
-
 ```bash
 ./mvnw spring-boot:run
 ```
 
-URL: `http://localhost:8080`
+Mongo (Parte 3):
 
-Si el usuario o contraseña de postgres es distinto, cambiar en `application.yaml`
+```bash
+export SPRING_PROFILES_ACTIVE=mongo
+export MONGODB_URI="mongodb+srv://..."
+./mvnw spring-boot:run
+```
 
 ## Swagger
 
-`http://localhost:8080/swagger-ui.html` para ver y probar los endpoints
+`http://localhost:8080/swagger-ui.html`
 
-## Seguridad
+## Login
 
-La API usa JWT y no guarda sesion en servidor.
+`POST /auth/login` con `username` y `password`. Usuario inicial: `admin` / `Admin123!` (variables `BOOTSTRAP_LIBRARIAN_*`). Requests: `Authorization: Bearer <token>`.
 
-Login: `POST /auth/login` con body:
+## Rutas
 
-```json
-{
-  "username": "admin",
-  "password": "Admin123!"
-}
-```
-
-Ese usuario admin se crea automaticamente al iniciar la app (si no existe). Se puede cambiar con variables:
-
-- `BOOTSTRAP_LIBRARIAN_USERNAME`
-- `BOOTSTRAP_LIBRARIAN_PASSWORD`
-- `BOOTSTRAP_LIBRARIAN_NAME`
-
-El token se envia asi en cada request protegida:
-
-`Authorization: Bearer <token>`
-
-Roles:
-
-- `LIBRARIAN`: gestionar libros, usuarios y prestamos
-- `USER`: consultar libros y operar solo sus propios prestamos
-
-Si falta token o es invalido retorna `401`.
-Si el rol no alcanza o intenta ver prestamos de otro usuario retorna `403`.
-
-## Endpoints
-
-Libros: POST agregar, GET listar o por id, PATCH disponibilidad. Ruta /api/books
-
-Usuarios: POST registrar, GET listar o por id. Ruta /api/users (solo LIBRARIAN)
-
-Prestamos: POST crear (userId y bookId en el body), GET listar o por id, POST /return para devolver. Ruta /api/loans
-
-## Lombok
-
-Genera getters y setters automaticamente.
-
-## Errores
-
-GlobalExceptionHandler devuelve un json con el mensaje cuando hay error. Documentado en Swagger.
-
-## Base de datos
-
-Postgres con tablas users, books, loans. Config en application.yaml. Repositorios en persistence.
-
-## HTTPS (SSL/TLS)
-
-Hay soporte para HTTPS configurable por variables:
-
-- `SSL_ENABLED=true`
-- `SSL_KEY_STORE`
-- `SSL_KEY_STORE_PASSWORD`
-- `SSL_KEY_STORE_TYPE` (por defecto `PKCS12`)
-- `SSL_KEY_ALIAS`
+- `/api/books` — alta, listado, por id, PATCH disponibilidad
+- `/api/users` — solo `LIBRARIAN`
+- `/api/loans` — crear, listar, por id, devolver; `DELETE /api/loans/{id}` solo `LIBRARIAN`
 
 ## Pruebas
 
@@ -100,22 +50,24 @@ Hay soporte para HTTPS configurable por variables:
 ./mvnw clean verify
 ```
 
-Cobertura en target/site/jacoco/index.html
+JaCoCo: `target/site/jacoco/index.html` — PMD: `target/pmd.xml`
 
-PMD en target/pmd.xml, no hace fallar el build.
+## Diagramas
 
-## SonarCloud
+Diagrama de clases:
 
-```bash
-./mvnw verify sonar:sonar -Dsonar.login=TU_TOKEN
-```
+Diagrama de componentes general:
 
-## Carpetas
+Diagrama de componentes específico:
 
-core: model, service, validator, util, exception
+Diagrama db relacional:
 
-controller: rest y dto
+Diagrama mongo:
 
-persistence: entidades y repositorios
+## CI
 
-config: swagger
+`.github/workflows/ci.yml`: compile, verify, pmd, deploy placeholder.
+
+## HTTPS / Sonar
+
+Ver `application.yaml` (SSL). Sonar: `./mvnw verify sonar:sonar -Dsonar.login=TOKEN`

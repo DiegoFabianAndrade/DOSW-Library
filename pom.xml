@@ -12,7 +12,7 @@
 	<artifactId>DOSW-Library</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>DOSW-Library</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Biblioteca DOSW - API REST</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -42,6 +42,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb</artifactId>
 		</dependency>
 
 		<dependency>

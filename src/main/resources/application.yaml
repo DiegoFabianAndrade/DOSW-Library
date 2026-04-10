@@ -1,15 +1,8 @@
 spring:
   application:
     name: DOSW-Library
-  datasource:
-    url: jdbc:postgresql://localhost:5432/dosw_library
-    username: dosw
-    password: dosw
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    open-in-view: false
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:relational}
 
 security:
   jwt:
@@ -37,3 +30,44 @@ springdoc:
     operations-sorter: method
     tags-sorter: alpha
   show-actuator: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: relational
+  datasource:
+    url: jdbc:postgresql://localhost:5432/dosw_library
+    username: dosw
+    password: dosw
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  data:
+    mongodb:
+      repositories:
+        enabled: false
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+      - org.springframework.boot.autoconfigure.mongo.MongoReactiveAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration
+
+---
+spring:
+  config:
+    activate:
+      on-profile: mongo
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://127.0.0.1:27017/dosw_library}
+      repositories:
+        enabled: true

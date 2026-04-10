@@ -1,6 +1,7 @@
 package edu.eci.dosw.tdd.core.model;
 
 import java.time.LocalDate;
+import java.util.List;
 import lombok.Data;
 
 @Data
@@ -11,4 +12,5 @@ public class Loan {
     private LocalDate loanDate;
     private LocalDate returnDate;
     private Status status;
+    private List<LoanAuditEvent> history;
 }

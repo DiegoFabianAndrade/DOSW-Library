@@ -2,7 +2,7 @@ package edu.eci.dosw.tdd.core.service;
 
 import edu.eci.dosw.tdd.core.exception.BookNotFoundException;
 import edu.eci.dosw.tdd.core.model.Book;
-import edu.eci.dosw.tdd.persistence.repository.BookRepository;
+import edu.eci.dosw.tdd.persistence.relational.repository.BookRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,7 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
-@ActiveProfiles("test")
+@ActiveProfiles({"test", "relational"})
 @Transactional
 class BookServiceTest {
 
@@ -38,6 +38,7 @@ class BookServiceTest {
         Assertions.assertNotNull(created.getId());
         Assertions.assertTrue(created.isAvailable());
         Assertions.assertEquals(2, bookService.getAvailableCopies(created.getId()));
+        Assertions.assertEquals(2, bookService.getTotalCopies(created.getId()));
         Assertions.assertEquals(1, bookRepository.count());
     }
 

@@ -16,13 +16,14 @@ public class BookMapper {
         return book;
     }
 
-    public static BookDTO toDTO(Book book, Integer quantity) {
+    public static BookDTO toDTO(Book book, Integer availableCopies) {
         return BookDTO.builder()
                 .id(book.getId())
                 .title(book.getTitle())
                 .author(book.getAuthor())
                 .available(book.isAvailable())
-                .quantity(quantity)
+                .quantity(availableCopies)
+                .totalCopies(book.getTotalCopies())
                 .build();
     }
 }
